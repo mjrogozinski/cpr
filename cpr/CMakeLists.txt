@@ -43,13 +43,34 @@ message(STATUS "Using CURL_LIBRARIES: ${CURL_LIBRARIES}.")
 target_link_libraries(${CPR_LIBRARIES}
     ${CURL_LIBRARIES})
 
-if(NOT (CMAKE_VERSION VERSION_LESS 3.0))
-    target_include_directories(${CPR_LIBRARIES}
-        PUBLIC
-        ${CPR_INCLUDE_DIRS}
-        ${CURL_INCLUDE_DIRS})
-else()
+if((CMAKE_VERSION VERSION_LESS 3.0))
     include_directories(
         ${CPR_INCLUDE_DIRS}
         ${CURL_INCLUDE_DIRS})
+    return()
 endif()
+
+target_include_directories(${CPR_LIBRARIES}
+    PRIVATE ${CURL_INCLUDE_DIRS}
+    PUBLIC
+    $<BUILD_INTERFACE:${CPR_INCLUDE_DIRS}>
+    $<INSTALL_INTERFACE:include>)
+
+install(DIRECTORY ${cpr_SOURCE_DIR}/include/
+    DESTINATION include
+    )
+
+include(GNUInstallDirs)
+
+install(TARGETS cpr libcurl
+    EXPORT cpr-targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+install(EXPORT cpr-targets
+    NAMESPACE cpr::
+    FILE cprConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cpr
+    )
