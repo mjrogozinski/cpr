@@ -1,38 +1,27 @@
 find_package(Threads)
-set(TEST_SERVER_LIBRARY test_server)
-add_library(${TEST_SERVER_LIBRARY}
-    server.cpp)
-target_link_libraries(${TEST_SERVER_LIBRARY}
-    ${MONGOOSE_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT})
+find_package(GTest REQUIRED)
+
+add_library(test_server
+    server.cpp
+    )
+
+target_link_libraries(test_server
+    mongoose::lib
+    ${CMAKE_THREAD_LIBS_INIT}
+    )
 
 macro(add_cpr_test _TEST_NAME)
     add_executable(${_TEST_NAME}_tests
         ${_TEST_NAME}_tests.cpp)
     target_link_libraries(${_TEST_NAME}_tests
-        ${TEST_SERVER_LIBRARY}
-        ${GTEST_LIBRARIES}
-        ${CPR_LIBRARIES})
+        test_server
+        GTest::GTest
+        GTest::Main
+        cpr)
     add_test(NAME cpr_${_TEST_NAME}_tests COMMAND ${_TEST_NAME}_tests)
     # Group under the "tests" project folder in IDEs such as Visual Studio.
     set_property(TARGET ${_TEST_NAME}_tests PROPERTY FOLDER "tests")
-    if(WIN32)
-        set(LIBCURL_DLL_NAME "libcurl.dll")
-        if(CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-            set(LIBCURL_DLL_NAME "libcurl-d.dll")
-        endif()
-        add_custom_command(TARGET ${_TEST_NAME}_tests POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy
-                                $<TARGET_FILE_DIR:libcurl>/${LIBCURL_DLL_NAME} $<TARGET_FILE_DIR:${_TEST_NAME}_tests>)
-    endif()
 endmacro()
-
-include_directories(
-    ${CURL_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CPR_INCLUDE_DIRS}
-    ${GTEST_INCLUDE_DIRS}
-    ${MONGOOSE_INCLUDE_DIRS})
 
 add_cpr_test(get)
 add_cpr_test(post)
