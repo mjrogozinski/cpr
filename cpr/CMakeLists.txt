@@ -1,4 +1,5 @@
-find_library(curl REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(curl REQUIRED IMPORTED_TARGET libcurl)
 
 add_library(cpr
     auth.cpp
@@ -16,7 +17,7 @@ add_library(cpr
     ssl_options.cpp
     )
 
-target_link_libraries(cpr curl)
+target_link_libraries(cpr PkgConfig::curl)
 
 target_include_directories(cpr
     PUBLIC
