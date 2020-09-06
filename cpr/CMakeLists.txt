@@ -17,7 +17,7 @@ add_library(cpr
     ssl_options.cpp
     )
 
-target_link_libraries(cpr PkgConfig::curl)
+target_link_libraries(cpr PRIVATE PkgConfig::curl)
 
 target_include_directories(cpr
     PUBLIC
